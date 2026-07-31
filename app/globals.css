@@ -1,28 +1,41 @@
 @import "tailwindcss";
 
 /*
-  dreamrr — light / paper.
-  One accent (dream red). Everything else is paper, ink, and a single hairline.
-  Deliberately few tokens: if you need a new colour, you probably don't.
+  dreamrr — dark. Night sky, one accent (dream red), a single hairline.
+  The token NAMES are unchanged on purpose, so nothing downstream had to move:
+  "paper" is now the night, "ink" is now the light on it.
 */
 @theme {
-  --color-paper: #f4f1ea;
-  --color-paper-raised: #fbf9f4;
-  --color-paper-sunk: #ebe6db;
-  --color-ink: #17150f;
-  --color-ink-soft: #6b6558;
-  --color-ink-faint: #9a9384;
-  --color-line: #ddd6c7;
-  --color-line-strong: #c7bfad;
-  --color-dream: #d4321c;
-  --color-dream-deep: #a82412;
+  --color-paper: #07070c;
+  --color-paper-raised: #101018;
+  --color-paper-sunk: #191922;
+  --color-ink: #f2f0ec;
+  --color-ink-soft: #9a958c;
+  --color-ink-faint: #6a6559;
+  --color-line: #26262f;
+  --color-line-strong: #3a3a47;
+  --color-dream: #ff4a2e;
+  --color-dream-deep: #d4321c;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
+}
+
+/* Stars. Two properties animate, both compositor-friendly. */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: var(--dim);
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: var(--bright);
+    transform: scale(1);
+  }
 }
 
 body {
@@ -40,17 +53,12 @@ body {
   color: var(--color-ink-faint);
 }
 
-/* CopilotKit's sidebar: plain white, no shadows, black accent.
+/* CopilotKit's own dark theme does the heavy lifting (see `dark` on <html> in
+   layout.tsx). Only the accent and the shadows need saying.
    Doubled `:root` on purpose — @copilotkit/react-ui/styles.css is imported after
-   this file and sets these on a plain `:root`, so a single `:root` here loses. */
+   this file, so a single `:root` here would lose to it. */
 :root:root {
-  --copilot-kit-primary-color: #17150f;
-  --copilot-kit-contrast-color: #ffffff;
-  --copilot-kit-background-color: #ffffff;
-  --copilot-kit-input-background-color: #fafafa;
-  --copilot-kit-secondary-color: #ffffff;
-  --copilot-kit-secondary-contrast-color: #17150f;
-  --copilot-kit-separator-color: #ececec;
+  --copilot-kit-primary-color: #ff4a2e;
   --copilot-kit-shadow-sm: none;
   --copilot-kit-shadow-md: none;
   --copilot-kit-shadow-lg: none;

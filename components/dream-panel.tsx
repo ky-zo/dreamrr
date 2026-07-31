@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { BuyButton } from "@/components/buy-button";
 import { useDreamStore } from "@/components/dream-store";
-import { Avatar, DreamMedia } from "@/components/media";
+import { Avatar, DreamTrailer } from "@/components/media";
 
 export function DreamPanel() {
   const { dreams, selectedId, select } = useDreamStore();
@@ -38,19 +38,20 @@ export function DreamPanel() {
     >
       <button
         type="button"
-        aria-label="Close"
+        aria-label="Close (Esc)"
+        title="Close (Esc)"
         onClick={() => select(null)}
-        className="absolute right-2 top-2 z-10 h-7 w-7 rounded-sm text-ink-faint transition-colors hover:text-ink"
+        className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-base leading-none text-white transition-colors hover:bg-ink"
       >
         ×
       </button>
 
-      <DreamMedia
+      <DreamTrailer
+        key={dream.id}
         poster={dream.image}
         video={dream.video}
         alt={dream.title}
-        active
-        className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-t-lg"
+        className="aspect-video w-full shrink-0 overflow-hidden rounded-t-lg bg-paper-sunk"
       />
 
       <div className="p-5">

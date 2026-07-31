@@ -2,19 +2,22 @@
 
 import { useEffect, useRef, type RefObject } from "react";
 import { useDreamStore } from "@/components/dream-store";
-import { DreamMedia, PlayBadge } from "@/components/media";
+import { DreamImage, PlayBadge } from "@/components/media";
 import { formatPrice } from "@/lib/dreams";
 import { projectLatLng } from "@/lib/globe-projection";
 import type { GlobeRotation } from "./rotation";
 
 type Props = { rotation: RefObject<GlobeRotation> };
 
-const CARD_W = 280;
+/** Posters are shot vertical, so the hover card is a poster with a caption. */
+const CARD_W = 208;
 const GAP = 18;
 
 export function DreamPopover({ rotation }: Props) {
-  const { dreams, hoveredId } = useDreamStore();
-  const dream = dreams.find((d) => d.id === hoveredId) ?? null;
+  const { dreams, hoveredId, selectedId } = useDreamStore();
+  // The panel owns the screen once a dream is open — don't stack a card on it.
+  const dream =
+    selectedId === null ? (dreams.find((d) => d.id === hoveredId) ?? null) : null;
   const anchorRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -49,32 +52,32 @@ export function DreamPopover({ rotation }: Props) {
     <div ref={anchorRef} className="pointer-events-none absolute left-0 top-0 z-20">
       <div
         ref={cardRef}
-        style={{ opacity: 0, transform: "scale(0.97)" }}
-        className="w-[280px] overflow-hidden rounded-md border border-line bg-paper-raised shadow-[0_1px_3px_rgba(23,21,15,0.07)] transition-[opacity,transform] duration-[120ms]"
+        style={{ opacity: 0, transform: "scale(0.97)", width: CARD_W }}
+        className="overflow-hidden rounded-md border border-line bg-paper-raised shadow-[0_1px_3px_rgba(23,21,15,0.07)] transition-[opacity,transform] duration-[120ms]"
       >
-        <div className="relative">
-          <DreamMedia
-            poster={dream.image}
-            video={dream.video}
+        <div className="relative aspect-[2/3] w-full bg-paper-sunk">
+          <DreamImage
+            src={dream.image}
             alt={dream.title}
-            active
-            className="aspect-video w-full bg-paper-sunk"
+            className="absolute inset-0 h-full w-full object-cover"
           />
+          <span className="absolute right-2 top-2 rounded-sm bg-ink/80 px-1.5 py-0.5 font-mono text-[11px] text-white">
+            {formatPrice(dream.price)}
+          </span>
           {dream.video ? (
-            <div className="absolute bottom-0 left-0 m-2">
+            <div className="absolute bottom-2 left-2">
               <PlayBadge />
             </div>
           ) : null}
         </div>
-        <div className="border-t border-line p-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="truncate text-sm font-medium">{dream.title}</span>
-            <span className="meta shrink-0 text-ink">{formatPrice(dream.price)}</span>
-          </div>
-          <div className="meta mt-1 truncate">
+        <div className="border-t border-line p-2.5">
+          <p className="truncate text-sm font-medium leading-snug">{dream.title}</p>
+          <p className="meta mt-0.5 truncate">
             {dream.location} · {dream.durationMin} min
-          </div>
-          <p className="mt-2 line-clamp-2 text-sm text-ink-soft">{dream.description}</p>
+          </p>
+          <p className="meta mt-1.5 text-ink">
+            {dream.video ? "Click to play trailer" : "Click for details"}
+          </p>
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import { DreamDots } from "./dream-dots";
 import { DreamPopover } from "./dream-popover";
 import { GlobeCanvas } from "./globe-canvas";
 import { createRotation, type GlobeRotation } from "./rotation";
+import { Stars } from "./stars";
 
 const MAX_SIZE = 760;
 const MIN_SIZE = 280;
@@ -58,6 +59,7 @@ export function GlobeStage() {
 
   return (
     <div ref={containerRef} className="relative h-full w-full">
+      <Stars />
       {size > 0 && (
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
@@ -65,14 +67,28 @@ export function GlobeStage() {
           onPointerEnter={() => setHovered(true)}
           onPointerLeave={() => setHovered(false)}
         >
-          {/* A soft bloom under the globe so the white sphere lifts off the
-              paper instead of being cut out of it. */}
+          {/* A soft colour bloom under the globe so the white sphere lifts off
+              the page instead of being cut out of it. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -inset-[14%] rounded-full"
+            className="pointer-events-none absolute -inset-[10%] rounded-full blur-2xl"
+            style={{
+              background: [
+                "radial-gradient(circle at 28% 26%, rgba(64,132,255,0.16) 0%, rgba(64,132,255,0) 52%)",
+                "radial-gradient(circle at 74% 30%, rgba(255,106,182,0.15) 0%, rgba(255,106,182,0) 52%)",
+                "radial-gradient(circle at 30% 74%, rgba(46,204,141,0.13) 0%, rgba(46,204,141,0) 52%)",
+                "radial-gradient(circle at 72% 76%, rgba(255,206,74,0.15) 0%, rgba(255,206,74,0) 52%)",
+              ].join(", "),
+            }}
+          />
+          {/* Sinks the middle back to night so the colour reads as an aura at
+              the limb rather than a wash across the sphere. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-[4%] rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(255,255,255,0.95) 42%, rgba(255,255,255,0.45) 58%, rgba(255,255,255,0) 72%)",
+                "radial-gradient(circle, rgba(7,7,12,0.95) 42%, rgba(7,7,12,0.55) 62%, rgba(7,7,12,0) 76%)",
             }}
           />
           {/* An open dream holds the globe still too, so it doesn't drift out

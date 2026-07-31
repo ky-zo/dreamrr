@@ -35,22 +35,20 @@ export function GlobeCanvas({ rotation, size, hovered }: Props) {
       height: width,
       phi: rotation.current.phi,
       theta: rotation.current.theta,
-      // In cobe's shader `dark` picks between mix(1-q, q) for the map term, so
-      // dark:0 INVERTS it — land dots come out darker than the ocean. That is
-      // exactly the paper look, and it's why baseColor here is light, not dark.
-      dark: 0,
+      // cobe's shader mixes between (1-q) and q for the map term on `dark`.
+      // dark:1 is the un-inverted branch — land dots come out BRIGHTER than the
+      // ocean, which is what a night sky wants. (dark:0 was the paper look.)
+      dark: 1,
       diffuse: 0,
       mapSamples: 16000,
-      // mapBrightness saturates the dots toward ink. mapBaseBrightness is a
-      // floor on the map texture, so anything above 0 dots the oceans too.
+      // mapBaseBrightness is a floor on the map texture, so anything above 0
+      // dots the oceans too. Land only.
       mapBrightness: 1,
       mapBaseBrightness: 0,
-      // The shader adds a +0.1 bias before the rim term, so baseColor is set to
-      // 1/1.1 to land the sphere on pure white without clipping. glowColor is
-      // held lower or the rim blows out into a hard white ring.
-      baseColor: [0.909, 0.909, 0.909],
-      markerColor: [0.83, 0.2, 0.11],
-      glowColor: [0.78, 0.775, 0.765],
+      // Ocean lands on baseColor*0.1 (near black), land on baseColor*1.1.
+      baseColor: [0.62, 0.65, 0.78],
+      markerColor: [1, 0.29, 0.18],
+      glowColor: [0.16, 0.18, 0.3],
       opacity: 1,
       markers: [],
     });
