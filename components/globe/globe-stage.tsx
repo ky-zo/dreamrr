@@ -8,6 +8,7 @@ import {
   shortestAngleDelta,
   thetaForLatitude,
 } from "@/lib/globe-projection";
+import { DreamArc } from "./dream-arc";
 import { DreamDots } from "./dream-dots";
 import { DreamPopover } from "./dream-popover";
 import { GlobeCanvas } from "./globe-canvas";
@@ -80,6 +81,7 @@ export function GlobeStage() {
           {/* An open dream holds the globe still too, so it doesn't drift out
               from under the panel while you're reading. */}
           <GlobeCanvas rotation={rotation} size={size} hovered={hovered || selectedId !== null} />
+          <DreamArc rotation={rotation} />
           <DreamDots rotation={rotation} />
           <DreamPopover rotation={rotation} />
         </div>

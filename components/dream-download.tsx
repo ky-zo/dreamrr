@@ -15,7 +15,13 @@ import type { DreamWithSeller } from "@/lib/types";
  * Phases run on timers rather than real work: the purchase is a mock, so the
  * theatre *is* the feature. Every phase can be skipped with Escape.
  */
-type Phase = "warp" | "downloading" | "success" | "upsell" | "crush" | "installed";
+type Phase =
+  | "warp"
+  | "downloading"
+  | "success"
+  | "upsell"
+  | "splicing"
+  | "installed";
 
 /** Status lines, keyed to the progress they appear at. */
 const STAGES: [number, string][] = [
@@ -32,6 +38,63 @@ const STAGES: [number, string][] = [
 
 /** Dollars, like every other price in the catalogue. */
 const CRUSH_PRICE = 20;
+const LUCID_PRICE = 35;
+
+/** One upgrade you can toggle on. Selection is the whole interaction. */
+function AddOnCard({
+  selected,
+  onSelect,
+  title,
+  price,
+  blurb,
+  children,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  title: string;
+  price: number;
+  blurb: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div
+      role="checkbox"
+      aria-checked={selected}
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`cursor-pointer rounded-lg border p-4 text-left transition ${
+        selected
+          ? "border-dream bg-dream/5"
+          : "border-line hover:border-line-strong"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-sm font-medium leading-snug">{title}</h3>
+        <span
+          aria-hidden
+          className={`mt-[2px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] ${
+            selected
+              ? "border-dream bg-dream text-white"
+              : "border-line-strong text-transparent"
+          }`}
+        >
+          ✓
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{blurb}</p>
+      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.04em] text-ink-faint">
+        + {formatPrice(price)}
+      </p>
+      {children}
+    </div>
+  );
+}
 
 export function DreamDownload() {
   const { dreams, checkoutId } = useDreamStore();
@@ -47,7 +110,12 @@ function Sequence({ dream }: { dream: DreamWithSeller }) {
   const [phase, setPhase] = useState<Phase>("warp");
   const [progress, setProgress] = useState(0);
   const [crush, setCrush] = useState("");
-  const [crushAdded, setCrushAdded] = useState(false);
+  const [wantsCrush, setWantsCrush] = useState(false);
+  const [wantsLucid, setWantsLucid] = useState(false);
+  const [addOns, setAddOns] = useState<{ crush: boolean; lucid: boolean }>({
+    crush: false,
+    lucid: false,
+  });
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const after = useCallback((ms: number, fn: () => void) => {
@@ -115,12 +183,14 @@ function Sequence({ dream }: { dream: DreamWithSeller }) {
   const status =
     [...STAGES].reverse().find(([at]) => progress >= at)?.[1] ?? STAGES[0][1];
 
-  function addCrush() {
-    setPhase("crush");
-    after(2200, () => {
-      setCrushAdded(true);
-      setPhase("installed");
-    });
+  // Only a named crush counts — an empty box buys nothing.
+  const crushReady = wantsCrush && crush.trim().length > 0;
+  const extra = (crushReady ? CRUSH_PRICE : 0) + (wantsLucid ? LUCID_PRICE : 0);
+
+  function addOnsConfirm() {
+    setAddOns({ crush: crushReady, lucid: wantsLucid });
+    setPhase("splicing");
+    after(2200, () => setPhase("installed"));
   }
 
   return (
@@ -188,49 +258,80 @@ function Sequence({ dream }: { dream: DreamWithSeller }) {
           <div className="animate-[rise_0.5s_ease-out] rounded-lg border border-line bg-paper-raised p-7 text-left">
             <p className="meta text-dream">One more thing</p>
             <h2 className="mt-3 text-2xl font-medium leading-snug">
-              Add your crush to your dream
+              Upgrade tonight
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              We splice one person of your choosing into every scene. They will be
-              nice to you. No refunds, no explanations, no eye contact in the
-              morning.
+              Two things we can splice in while the dream is still warm.
             </p>
 
-            <input
-              value={crush}
-              onChange={(e) => setCrush(e.target.value)}
-              placeholder="Their name…"
-              className="mt-5 h-11 w-full rounded-full border border-line bg-paper-sunk px-4 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-dream"
-            />
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <AddOnCard
+                selected={wantsCrush}
+                onSelect={() => setWantsCrush((v) => !v)}
+                title="Add your crush"
+                price={CRUSH_PRICE}
+                blurb="One person of your choosing, spliced into every scene. They will be nice to you. No eye contact in the morning."
+              >
+                {wantsCrush && (
+                  <input
+                    autoFocus
+                    value={crush}
+                    onChange={(e) => setCrush(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    // Space and Enter belong to the name, not to the card.
+                    onKeyDown={(e) => e.stopPropagation()}
+                    placeholder="Their name…"
+                    className="mt-3 h-10 w-full rounded-full border border-line bg-paper-sunk px-4 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-dream"
+                  />
+                )}
+              </AddOnCard>
+
+              <AddOnCard
+                selected={wantsLucid}
+                onSelect={() => setWantsLucid((v) => !v)}
+                title="Add lucid dreaming"
+                price={LUCID_PRICE}
+                blurb="You will know it is a dream. You get the controls. Flying included; consequences still not."
+              />
+            </div>
 
             <button
               type="button"
-              onClick={addCrush}
-              disabled={!crush.trim()}
-              className="mt-3 h-11 w-full rounded-full bg-dream text-sm font-medium text-white transition hover:bg-dream-deep active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-dream"
+              onClick={addOnsConfirm}
+              disabled={extra === 0}
+              className="mt-5 h-11 w-full rounded-full bg-dream text-sm font-medium text-white transition hover:bg-dream-deep active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-dream"
             >
-              Add them · extra {formatPrice(CRUSH_PRICE)}
+              {extra === 0
+                ? "Pick an upgrade"
+                : `Splice it in · extra ${formatPrice(extra)}`}
             </button>
             <button
               type="button"
               onClick={close}
               className="mt-2 h-9 w-full text-xs text-ink-faint transition hover:text-ink-soft"
             >
-              No thanks, I&apos;ll dream alone
+              No thanks, I&apos;m boring
             </button>
           </div>
         )}
 
-        {phase === "crush" && (
+        {phase === "splicing" && (
           <div className="animate-[rise_0.4s_ease-out]">
             <p className="meta text-dream animate-[flicker_0.5s_steps(2)_infinite]">
               Splicing
             </p>
             <h2 className="mt-4 text-[clamp(1.4rem,4vw,2rem)] font-medium leading-tight">
-              Adding {crush.trim()} to your dream
+              {addOns.crush
+                ? `Adding ${crush.trim()} to your dream`
+                : "Handing you the controls"}
             </h2>
             <p className="mt-3 text-sm text-ink-soft">
-              Rendering their face from memory. Softening their opinions.
+              {addOns.crush
+                ? "Rendering their face from memory. Softening their opinions."
+                : "Teaching you to notice the doorways."}
+              {addOns.crush && addOns.lucid
+                ? " Installing lucidity, so you will remember all of it."
+                : null}
             </p>
             <div className="mx-auto mt-8 h-[3px] w-56 overflow-hidden rounded-full bg-paper-sunk">
               <div className="h-full w-1/3 rounded-full bg-dream shadow-[0_0_16px_var(--color-dream)] animate-[sweep_1.1s_ease-in-out_infinite]" />
@@ -241,10 +342,10 @@ function Sequence({ dream }: { dream: DreamWithSeller }) {
         {phase === "installed" && (
           <div className="animate-[pop_0.5s_cubic-bezier(0.34,1.56,0.64,1)]">
             <h2 className="text-[clamp(1.6rem,4.5vw,2.4rem)] font-medium">
-              {crushAdded ? `${crush.trim()} is in.` : "Dream installed"}
+              {addOns.crush ? `${crush.trim()} is in.` : "You are awake in there."}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-              Charged {formatPrice(dream.price + CRUSH_PRICE)}. Go to sleep.
+              Charged {formatPrice(dream.price + extra)}. Go to sleep.
             </p>
             <button
               type="button"

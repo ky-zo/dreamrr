@@ -16,6 +16,8 @@
   --color-line-strong: #3a3a47;
   --color-dream: #ff4a2e;
   --color-dream-deep: #d4321c;
+  /* Stills — dreams captured as a poster only, no video. */
+  --color-still: #ff9d2e;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
@@ -42,7 +44,9 @@ html {
 
 /* Everything that isn't the download overlay implodes and blurs out. */
 [data-checkout] main,
-[data-checkout] .copilotKitSidebar {
+[data-checkout] .copilotKitSidebar,
+[data-sell] main,
+[data-sell] .copilotKitSidebar {
   transform: scale(1.25);
   filter: blur(18px) brightness(0.35);
   opacity: 0;
@@ -191,7 +195,8 @@ body {
   transition: opacity 500ms ease-out 300ms;
 }
 
-[data-checkout] .copilotKitButton {
+[data-checkout] .copilotKitButton,
+[data-sell] .copilotKitButton {
   pointer-events: none;
   opacity: 0;
 }

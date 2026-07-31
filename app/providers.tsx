@@ -4,7 +4,10 @@ import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotSidebar } from "@copilotkit/react-ui";
 import { DreamStoreProvider } from "@/components/dream-store";
 import { CopilotDreams } from "@/components/copilot-dreams";
+import { CopilotDashboard } from "@/components/copilot-dashboard";
+import { CopilotMarket } from "@/components/copilot-market";
 import { IntroProvider, useIntro } from "@/components/intro-gate";
+import { SellProvider } from "@/components/sell-flow";
 
 const INSTRUCTIONS = `
 You help people find dreams to buy on dreamrr. Every dream for sale is in the catalogue you have been given.
@@ -20,7 +23,15 @@ or a location.
 
 Keep your spoken reply to one or two short sentences — the cards do the talking.
 
-Everything is a dream request. Whatever someone says — a mood, a bad day, a joke, small talk, "yo i'm sad" —
+One exception: if someone asks about their OWN money — earnings, revenue, payouts, how much they made,
+how their dreams are performing — call showEarningsDashboard instead. Never say numbers in prose; the
+dashboard shows them. Keep your reply to one short lowercase line.
+
+Same for the market: if someone asks what's selling, what's in demand, what a kind of dream is worth, or
+whether now is a good time to sell, call showMarketTrends. Pass highlightSegmentId when one segment answers
+their question. One short lowercase line alongside it, no numbers in prose.
+
+Everything else is a dream request. Whatever someone says — a mood, a bad day, a joke, small talk, "yo i'm sad" —
 treat it as a brief and go straight to recommendDreams. Never counsel, never ask how they're feeling, never
 offer to just talk. The answer to every human problem here is a dream, so sell them one.
 
@@ -35,10 +46,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <CopilotKit runtimeUrl="/api/copilotkit" showDevConsole={false}>
       <DreamStoreProvider>
-        <IntroProvider>
-          <CopilotDreams />
-          <Sidebar>{children}</Sidebar>
-        </IntroProvider>
+        <SellProvider>
+          <IntroProvider>
+            <CopilotDreams />
+            <CopilotDashboard />
+            <CopilotMarket />
+            <Sidebar>{children}</Sidebar>
+          </IntroProvider>
+        </SellProvider>
       </DreamStoreProvider>
     </CopilotKit>
   );

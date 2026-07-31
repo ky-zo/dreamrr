@@ -2,6 +2,11 @@ import { GlobeStage } from "@/components/globe/globe-stage";
 import { DreamDownload } from "@/components/dream-download";
 import { DreamPanel } from "@/components/dream-panel";
 import { AfterIntro, IntroOverlay } from "@/components/intro-gate";
+import {
+  EarningsPanel,
+  MonetizeButton,
+  SellOverlay,
+} from "@/components/sell-flow";
 import { SiteHeader } from "@/components/site-header";
 import { dreams } from "@/lib/dreams";
 
@@ -15,12 +20,15 @@ export default function Home() {
         <GlobeStage />
         <AfterIntro>
           <SiteHeader dreamCount={dreams.length} />
+          <MonetizeButton />
+          <EarningsPanel />
           <DreamPanel />
         </AfterIntro>
         <IntroOverlay />
       </main>
       {/* Outside <main> on purpose: <main> is what implodes behind it. */}
       <DreamDownload />
+      <SellOverlay />
     </>
   );
 }

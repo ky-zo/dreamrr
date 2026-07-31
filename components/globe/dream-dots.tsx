@@ -9,7 +9,8 @@ import type { GlobeRotation } from "./rotation";
 type Props = { rotation: RefObject<GlobeRotation> };
 
 export function DreamDots({ rotation }: Props) {
-  const { dreams, hoveredId, setHoveredId, select, isOwned } = useDreamStore();
+  const { dreams, hoveredId, highlightedId, setHoveredId, select, isOwned } =
+    useDreamStore();
   const dots = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   useEffect(() => {
@@ -40,7 +41,11 @@ export function DreamDots({ rotation }: Props) {
     <div className="pointer-events-none absolute inset-0 z-10">
       {dreams.map((dream) => {
         const owned = isOwned(dream.id);
-        const active = hoveredId === dream.id;
+        /* Pointed at by the assistant: marked whether or not it's hovered. */
+        const marked = highlightedId === dream.id;
+        const active = hoveredId === dream.id || marked;
+        /* Still-only dreams (no video) get their own colour so they read apart from the rest. */
+        const still = dream.video === null;
         return (
           <button
             key={dream.id}
@@ -58,14 +63,30 @@ export function DreamDots({ rotation }: Props) {
             onBlur={() => setHoveredId(null)}
             onClick={() => select(dream.id)}
           >
+            {/* The ring only exists for the recommended dream, and it breathes. */}
+            {marked ? (
+              <span
+                className={`absolute h-5 w-5 animate-ping rounded-full ${still ? "bg-still/25" : "bg-dream/25"}`}
+              />
+            ) : null}
             <span
               className={[
-                "rounded-full transition-[width,height,box-shadow] duration-150",
-                active ? "h-[9px] w-[9px]" : "h-[7px] w-[7px]",
+                "relative rounded-full transition-[width,height,box-shadow] duration-150",
+                marked ? "h-[11px] w-[11px]" : active ? "h-[9px] w-[9px]" : "h-[7px] w-[7px]",
                 owned
                   ? "border border-line-strong bg-paper-sunk"
-                  : "bg-dream",
-                active ? "shadow-[0_0_0_3px_rgba(212,50,28,0.22)]" : "",
+                  : still
+                    ? "bg-still"
+                    : "bg-dream",
+                marked
+                  ? still
+                    ? "shadow-[0_0_0_5px_rgba(255,157,46,0.3)]"
+                    : "shadow-[0_0_0_5px_rgba(212,50,28,0.3)]"
+                  : active
+                    ? still
+                      ? "shadow-[0_0_0_3px_rgba(255,157,46,0.22)]"
+                      : "shadow-[0_0_0_3px_rgba(212,50,28,0.22)]"
+                    : "",
               ].join(" ")}
             />
           </button>

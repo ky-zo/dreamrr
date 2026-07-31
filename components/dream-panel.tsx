@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { BuyButton } from "@/components/buy-button";
 import { useDreamStore } from "@/components/dream-store";
+import { DreamReviews } from "@/components/dream-reviews";
 import { Avatar, DreamTrailer } from "@/components/media";
 
 export function DreamPanel() {
@@ -110,6 +111,8 @@ export function DreamPanel() {
           {dream.seller.dreamsSold} sold · {dream.seller.rating}★ · since {dream.seller.joined}
         </p>
       </div>
+
+      <DreamReviews dream={dream} />
 
       <div className="sticky bottom-0 mt-auto border-t border-line bg-paper-raised p-5">
         <BuyButton dream={dream} />
