@@ -1,0 +1,101 @@
+[
+  {
+    "id": "p-01",
+    "name": "Tsang Wai-lam",
+    "handle": "@harbourlight",
+    "avatar": "",
+    "location": "Hong Kong",
+    "bio": "Ferry mechanic on the night crossing, and sells only the loud dreams.",
+    "dreamsSold": 58,
+    "rating": 4.7,
+    "joined": "2022"
+  },
+  {
+    "id": "p-02",
+    "name": "Marisol Vega",
+    "handle": "@thirtysecondst",
+    "avatar": "",
+    "location": "New York, United States",
+    "bio": "Line cook who naps between shifts and wakes up with the city still running.",
+    "dreamsSold": 94,
+    "rating": 4.5,
+    "joined": "2021"
+  },
+  {
+    "id": "p-03",
+    "name": "Thandiwe Mokoena",
+    "handle": "@tablecloth",
+    "avatar": "",
+    "location": "Cape Town, South Africa",
+    "bio": "Climbing guide, and every listing here involves height in some form.",
+    "dreamsSold": 22,
+    "rating": 4.9,
+    "joined": "2024"
+  },
+  {
+    "id": "p-04",
+    "name": "Ari Whitcombe",
+    "handle": "@lowpaddock",
+    "avatar": "",
+    "location": "Christchurch, New Zealand",
+    "bio": "Keeps bees on the plains and records almost everything outdoors.",
+    "dreamsSold": 37,
+    "rating": 4.8,
+    "joined": "2023"
+  },
+  {
+    "id": "p-05",
+    "name": "June Park",
+    "handle": "@pierthirtynine",
+    "avatar": "",
+    "location": "San Francisco, United States",
+    "bio": "Bridge painter, and the catalogue is mostly birds and weather.",
+    "dreamsSold": 71,
+    "rating": 4.6,
+    "joined": "2021"
+  },
+  {
+    "id": "p-06",
+    "name": "Rui Bettencourt",
+    "handle": "@lateseed",
+    "avatar": "",
+    "location": "Lisbon, Portugal",
+    "bio": "Sold a company once and has been sleeping badly ever since.",
+    "dreamsSold": 15,
+    "rating": 4.3,
+    "joined": "2024"
+  },
+  {
+    "id": "p-07",
+    "name": "Camila Ferreyra",
+    "handle": "@surforest",
+    "avatar": "",
+    "location": "Bariloche, Argentina",
+    "bio": "Works a fire lookout eight months a year, alone, above the treeline.",
+    "dreamsSold": 49,
+    "rating": 4.9,
+    "joined": "2022"
+  },
+  {
+    "id": "p-08",
+    "name": "Niamh Sutherland",
+    "handle": "@closeandstair",
+    "avatar": "",
+    "location": "Edinburgh, Scotland",
+    "bio": "Night porter in an old hotel, and refuses to sell anything recorded twice.",
+    "dreamsSold": 63,
+    "rating": 5.0,
+    "joined": "2020"
+  },
+  {
+    "id": "p-09",
+    "name": "Elio Marchetti",
+    "handle": "@saltterrace",
+    "avatar": "",
+    "location": "Positano, Italy",
+    "bio": "Retired ferry captain who naps at noon and lists whatever comes of it.",
+    "dreamsSold": 28,
+    "rating": 4.4,
+    "joined": "2023"
+  }
+]

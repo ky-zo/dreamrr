@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/*
+  dreamrr — light / paper.
+  One accent (dream red). Everything else is paper, ink, and a single hairline.
+  Deliberately few tokens: if you need a new colour, you probably don't.
+*/
+@theme {
+  --color-paper: #f4f1ea;
+  --color-paper-raised: #fbf9f4;
+  --color-paper-sunk: #ebe6db;
+  --color-ink: #17150f;
+  --color-ink-soft: #6b6558;
+  --color-ink-faint: #9a9384;
+  --color-line: #ddd6c7;
+  --color-line-strong: #c7bfad;
+  --color-dream: #d4321c;
+  --color-dream-deep: #a82412;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Metadata, prices, coordinates — anything that reads as a record rather than prose. */
+.meta {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* CopilotKit's sidebar: plain white, no shadows, black accent.
+   Doubled `:root` on purpose — @copilotkit/react-ui/styles.css is imported after
+   this file and sets these on a plain `:root`, so a single `:root` here loses. */
+:root:root {
+  --copilot-kit-primary-color: #17150f;
+  --copilot-kit-contrast-color: #ffffff;
+  --copilot-kit-background-color: #ffffff;
+  --copilot-kit-input-background-color: #fafafa;
+  --copilot-kit-secondary-color: #ffffff;
+  --copilot-kit-secondary-contrast-color: #17150f;
+  --copilot-kit-separator-color: #ececec;
+  --copilot-kit-shadow-sm: none;
+  --copilot-kit-shadow-md: none;
+  --copilot-kit-shadow-lg: none;
+}
+
+/* The sidebar panel's own drop shadow is hard-coded on the class, not a variable. */
+.copilotKitSidebar .copilotKitWindow {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
