@@ -25,21 +25,34 @@ export function DreamImage({ src, alt, className = "" }: ImgProps) {
   );
 }
 
+/**
+ * Nobody uploaded a photo, so everyone gets a face instead of two grey initials.
+ * Emoji render as Apple's own art on Apple devices, and as the platform's own
+ * elsewhere — no image request either way.
+ */
+const FACES = [
+  "😀", "😎", "🤓", "🥸", "🤠", "😴", "🤖", "👻", "🐙", "🦊",
+  "🐸", "🐼", "🦉", "🐝", "🦄", "🌚", "🍄", "👽", "🧿", "🪐",
+];
+
+/** Stable per-name so a seller keeps the same face across renders and sessions. */
+function faceFor(name: string): { emoji: string; hue: number } {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return { emoji: FACES[hash % FACES.length], hue: (hash >> 5) % 360 };
+}
+
 export function Avatar({ src, alt, className = "" }: ImgProps) {
   const [failed, setFailed] = useState(false);
-  const initials = alt
-    .split(" ")
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-  if (failed) {
+  if (!src || failed) {
+    const { emoji, hue } = faceFor(alt);
     return (
       <div
-        className={`flex items-center justify-center rounded-full bg-paper-sunk text-[10px] font-medium text-ink-faint ${className}`}
+        aria-hidden
+        style={{ background: `hsl(${hue} 70% 88%)` }}
+        className={`flex select-none items-center justify-center rounded-full text-[22px] leading-none ${className}`}
       >
-        {initials}
+        {emoji}
       </div>
     );
   }

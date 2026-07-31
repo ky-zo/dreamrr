@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useDreamStore } from "@/components/dream-store";
+import { useIntro } from "@/components/intro-gate";
 import {
   phiForLongitude,
   shortestAngleDelta,
@@ -19,6 +20,7 @@ const FOCUS_MS = 700;
 
 export function GlobeStage() {
   const { registerGlobeFocus, selectedId } = useDreamStore();
+  const { entered } = useIntro();
   const containerRef = useRef<HTMLDivElement>(null);
   const rotation = useRef<GlobeRotation>(createRotation());
   const [size, setSize] = useState(0);
@@ -62,35 +64,19 @@ export function GlobeStage() {
       <Stars />
       {size > 0 && (
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: size, height: size }}
+          /* Shrunken and inert during the intro; the globe keeps spinning
+             underneath, it's just small and not yours to touch yet. */
+          className={`absolute left-1/2 top-1/2 transition-transform duration-[900ms] ease-out ${
+            entered ? "" : "pointer-events-none"
+          }`}
+          style={{
+            width: size,
+            height: size,
+            transform: `translate(-50%, -50%) scale(${entered ? 1 : 0.42})`,
+          }}
           onPointerEnter={() => setHovered(true)}
           onPointerLeave={() => setHovered(false)}
         >
-          {/* A soft colour bloom under the globe so the white sphere lifts off
-              the page instead of being cut out of it. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -inset-[10%] rounded-full blur-2xl"
-            style={{
-              background: [
-                "radial-gradient(circle at 28% 26%, rgba(64,132,255,0.16) 0%, rgba(64,132,255,0) 52%)",
-                "radial-gradient(circle at 74% 30%, rgba(255,106,182,0.15) 0%, rgba(255,106,182,0) 52%)",
-                "radial-gradient(circle at 30% 74%, rgba(46,204,141,0.13) 0%, rgba(46,204,141,0) 52%)",
-                "radial-gradient(circle at 72% 76%, rgba(255,206,74,0.15) 0%, rgba(255,206,74,0) 52%)",
-              ].join(", "),
-            }}
-          />
-          {/* Sinks the middle back to night so the colour reads as an aura at
-              the limb rather than a wash across the sphere. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -inset-[4%] rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(7,7,12,0.95) 42%, rgba(7,7,12,0.55) 62%, rgba(7,7,12,0) 76%)",
-            }}
-          />
           {/* An open dream holds the globe still too, so it doesn't drift out
               from under the panel while you're reading. */}
           <GlobeCanvas rotation={rotation} size={size} hovered={hovered || selectedId !== null} />
@@ -98,8 +84,12 @@ export function GlobeStage() {
           <DreamPopover rotation={rotation} />
         </div>
       )}
-      <p className="meta pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2">
-        Drag to spin · Hover a dot
+      <p
+        className={`meta pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 transition-opacity duration-700 ease-out ${
+          entered ? "opacity-100 delay-500" : "opacity-0"
+        }`}
+      >
+        Drag to spin · Hover a dot to preview · Click to play the trailer
       </p>
     </div>
   );

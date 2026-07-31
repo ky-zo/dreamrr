@@ -9,8 +9,12 @@ export function DreamPanel() {
   const { dreams, selectedId, select } = useDreamStore();
   const dream = dreams.find((d) => d.id === selectedId) ?? null;
   const [shown, setShown] = useState(false);
+  // Hovering the trailer widens the whole panel, so the clip grows without
+  // spilling past the panel's own clipping edge.
+  const [zoomed, setZoomed] = useState(false);
 
   useEffect(() => {
+    setZoomed(false);
     if (!dream) {
       setShown(false);
       return;
@@ -32,9 +36,9 @@ export function DreamPanel() {
 
   return (
     <aside
-      className={`absolute bottom-6 left-6 top-6 z-30 flex w-[340px] flex-col overflow-y-auto rounded-lg border border-line bg-paper-raised shadow-[0_1px_12px_rgba(23,21,15,0.06)] transition duration-[180ms] ${
-        shown ? "translate-x-0 opacity-100" : "-translate-x-3 opacity-0"
-      }`}
+      className={`absolute bottom-6 left-6 top-6 z-30 flex flex-col overflow-y-auto rounded-lg border border-line bg-paper-raised shadow-[0_1px_12px_rgba(23,21,15,0.06)] transition-all duration-[280ms] ${
+        zoomed ? "w-[min(1100px,82vw)]" : "w-[340px]"
+      } ${shown ? "translate-x-0 opacity-100" : "-translate-x-3 opacity-0"}`}
     >
       <button
         type="button"
@@ -46,13 +50,18 @@ export function DreamPanel() {
         ×
       </button>
 
-      <DreamTrailer
-        key={dream.id}
-        poster={dream.image}
-        video={dream.video}
-        alt={dream.title}
-        className="aspect-video w-full shrink-0 overflow-hidden rounded-t-lg bg-paper-sunk"
-      />
+      <div
+        onMouseEnter={() => dream.video && setZoomed(true)}
+        onMouseLeave={() => setZoomed(false)}
+      >
+        <DreamTrailer
+          key={dream.id}
+          poster={dream.image}
+          video={dream.video}
+          alt={dream.title}
+          className="aspect-video w-full shrink-0 overflow-hidden rounded-t-lg bg-paper-sunk"
+        />
+      </div>
 
       <div className="p-5">
         <h2 className="text-lg font-medium leading-snug">{dream.title}</h2>

@@ -50,7 +50,7 @@ export function DreamDots({ rotation }: Props) {
               else dots.current.delete(dream.id);
             }}
             style={{ opacity: 0 }}
-            className="absolute left-0 top-0 flex h-4 w-4 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dream"
+            className="absolute left-0 top-0 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dream"
             aria-label={`${dream.title} — ${formatPrice(dream.price)}`}
             onPointerEnter={() => setHoveredId(dream.id)}
             onPointerLeave={() => setHoveredId(null)}

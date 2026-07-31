@@ -35,6 +35,14 @@ type DreamStore = {
   purchase: (id: string) => void;
 
   /**
+   * Dream currently being "downloaded to your brain". Non-null hands the whole
+   * screen over to <DreamDownload>; the page itself blurs out behind it.
+   */
+  checkoutId: string | null;
+  startCheckout: (id: string) => void;
+  endCheckout: () => void;
+
+  /**
    * The globe calls this once on mount to hand over a way to rotate itself.
    * Anything else (chat cards, the panel) just calls `select`.
    */
@@ -76,6 +84,10 @@ export function DreamStoreProvider({ children }: { children: ReactNode }) {
     setOwnedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   }, []);
 
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
+  const startCheckout = useCallback((id: string) => setCheckoutId(id), []);
+  const endCheckout = useCallback(() => setCheckoutId(null), []);
+
   const value = useMemo<DreamStore>(
     () => ({
       dreams: dreamsWithSellers,
@@ -86,9 +98,22 @@ export function DreamStoreProvider({ children }: { children: ReactNode }) {
       ownedIds,
       isOwned: (id) => ownedIds.includes(id),
       purchase,
+      checkoutId,
+      startCheckout,
+      endCheckout,
       registerGlobeFocus,
     }),
-    [hoveredId, selectedId, ownedIds, select, purchase, registerGlobeFocus],
+    [
+      hoveredId,
+      selectedId,
+      ownedIds,
+      select,
+      purchase,
+      checkoutId,
+      startCheckout,
+      endCheckout,
+      registerGlobeFocus,
+    ],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
