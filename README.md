@@ -1,8 +1,11 @@
 # dreamrr
 
-A marketplace for dreams. Every red dot on the globe is one someone recorded and is willing to part with.
+**A marketplace for dreams.** Every red dot on the globe is a dream someone recorded and is willing
+to sell. Spin the globe, find one, buy it — or sell your own and watch what your subconscious clears
+for on the open market.
 
-## Run it
+Built for the hackathon on **[Lovart](https://lovart.ai)** (every image and video you see) and
+**[CopilotKit](https://copilotkit.ai)** (the assistant that actually drives the app).
 
 ```bash
 pnpm install
@@ -10,41 +13,62 @@ echo "OPENAI_API_KEY=sk-..." > .env.local
 pnpm dev
 ```
 
-The AI sidebar **requires** `OPENAI_API_KEY`. Without it `/api/copilotkit` returns a 500 that says so —
-there is no fallback, by design. The globe, the dream panel and buying all work without a key.
+## Try this first
 
-## Dropping in the real images
+Open the app and answer the assistant's one question — *creator or dreamer?*
 
-Both are wired up and degrade to a quiet paper placeholder until the files exist:
+- **"i'm a dreamer"** → ask for *"something calm, nothing scary"*. The assistant doesn't describe
+  dreams back at you; it renders a swipeable deck of real listings in the chat, and whichever card
+  is in front lights up on the globe.
+- **"i'm a creator"** → ask *"how much did I make this month?"* or *"what's selling right now?"*.
+  You get a ledger and a market ticker rendered in the chat, not a paragraph of numbers.
 
-- `public/dreams/d-001.png` … `d-024.png` — the dream stills, roughly 4:3
-- `public/people/p-01.png` … `p-12.png` — seller avatars, square
+## Lovart — the entire visual identity
 
-The paths live in `data/dreams.json` (`image`) and `data/people.json` (`avatar`). Change those
-if you'd rather name the files something else.
+Every dream in the catalogue was art-directed on a Lovart canvas: a 1950s-style movie poster for the
+dream, the stills that go with it, and a short video clip generated from the poster — *Escape the
+Police with a Dragon*, *Touching Grass*, *Running Away from the VC*, *falling*.
 
-## How it's put together
+![The Lovart canvas the dream posters, stills and clips were generated on](docs/lovart-canvas.png)
 
-| | |
+The joke only lands because the art is consistent. Prompting each dream as a period movie poster,
+in one place, is what gave 24 unrelated dreams a single house style — and what let us go from poster
+→ still → video without redrawing anything. Exports live in `public/dreams/`.
+
+## CopilotKit — generative UI, not a chatbot
+
+The assistant has no prose answers. Every question resolves to a React component rendered inside the
+chat, sharing state with the page:
+
+| Action | What it renders |
 |---|---|
-| `data/*.json` | The whole catalogue. 24 dreams, 12 sellers. No database. |
-| `lib/globe-projection.ts` | cobe's projection maths, transcribed from its source and verified. |
-| `components/globe/` | The globe, the dots, and the hover preview. |
-| `components/dream-panel.tsx` | Selected dream: detail, seller profile, buy. |
-| `components/copilot-dreams.tsx` | The one CopilotKit action — recommends 1–2 dreams as cards. |
+| `recommendDreams` | A deck of 1–4 dream cards; the front card drives the globe |
+| `showEarningsDashboard` | The seller's ledger — gross, payout, months behind it |
+| `showMarketTrends` | Live market: which dream categories are rising or crashing |
 
-### Why the dots aren't cobe markers
+Wiring, all in `components/copilot-*.tsx`:
 
-cobe draws to WebGL, so its markers can't be hovered, focused or given a tooltip. So we don't use
-them: `lib/globe-projection.ts` reimplements cobe's own projection in JS, and the dots are real
-`<button>` elements positioned over the canvas each frame. The dot you see and the dot you hover are
-the same element, so they can't drift apart, and the whole thing is keyboard-navigable for free.
+- `useCopilotReadable` puts the whole catalogue, the market and the user's earnings in context, so
+  the model answers from real data rather than inventing listings.
+- `useCopilotAction` with a `render` returns a component — the instructions say *always use the
+  action instead of describing dreams in prose*, which is what makes it feel like an app.
+- `useCopilotChatSuggestions` (`before-first-message`) makes the opening a two-button fork that
+  disappears once taken.
+- `CopilotRuntime` + `OpenAIAdapter` in `app/api/copilotkit/route.ts`.
 
-Those transforms are written directly to the DOM from a `requestAnimationFrame` loop rather than
-through React state — at 60fps, state would re-render the tree sixty times a second.
+## The globe
 
-## Buying
+cobe renders to WebGL, so its built-in markers can't be hovered, focused, or given a tooltip.
+`lib/globe-projection.ts` reimplements cobe's own projection in JS and the dots are real `<button>`
+elements positioned over the canvas each frame — so the dot you see is the dot you hover, and the
+whole map is keyboard-navigable. Transforms are written straight to the DOM from a
+`requestAnimationFrame` loop; at 60fps React state would re-render the tree sixty times a second.
 
-The Stripe-styled button runs a **mock** purchase against `app/api/checkout/route.ts`. No money moves
-and no Stripe key is involved. To make it real, swap that route's body for a Stripe Checkout Session
-and return `{ url }` to redirect to — nothing else needs to change.
+## What's real and what isn't
+
+- **Real:** the catalogue, the globe, the assistant, every generated image and clip.
+- **Mocked:** checkout. `app/api/checkout/route.ts` is a Stripe-styled stub — no money moves. Swap
+  its body for a Checkout Session returning `{ url }` and nothing else changes.
+- No database. `data/*.json` is the whole marketplace: 24 dreams, 12 sellers.
+
+Next 16 · React 19 · Tailwind 4 · CopilotKit 1.64 · cobe.

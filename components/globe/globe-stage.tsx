@@ -19,8 +19,11 @@ const MAX_SIZE = 760;
 const MIN_SIZE = 280;
 const FOCUS_MS = 700;
 
+/** How long the globe waits before it tells you what to do with it. */
+const HINT_DELAY_MS = 3500;
+
 export function GlobeStage() {
-  const { registerGlobeFocus, selectedId } = useDreamStore();
+  const { registerGlobeFocus, selectedId, hoveredId } = useDreamStore();
   const { entered } = useIntro();
   const containerRef = useRef<HTMLDivElement>(null);
   const rotation = useRef<GlobeRotation>(createRotation());
@@ -39,6 +42,26 @@ export function GlobeStage() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  /**
+   * The dots are small and nobody has been told they're hoverable, so if a
+   * little while goes by after entering without a single dot under the pointer,
+   * say it out loud. Hovering one retires the hint for good.
+   */
+  const [everHovered, setEverHovered] = useState(false);
+  const [hintDue, setHintDue] = useState(false);
+
+  useEffect(() => {
+    if (hoveredId) setEverHovered(true);
+  }, [hoveredId]);
+
+  useEffect(() => {
+    if (!entered || everHovered) return;
+    const id = setTimeout(() => setHintDue(true), HINT_DELAY_MS);
+    return () => clearTimeout(id);
+  }, [entered, everHovered]);
+
+  const showHint = hintDue && !everHovered;
 
   useEffect(() => {
     let raf = 0;
@@ -86,6 +109,15 @@ export function GlobeStage() {
           <DreamPopover rotation={rotation} />
         </div>
       )}
+      <p
+        className={`pointer-events-none absolute bottom-16 left-1/2 -translate-x-1/2 rounded-full border border-dream/40 bg-paper-raised/90 px-4 py-2 text-xs text-dream shadow-[0_1px_12px_rgba(23,21,15,0.08)] backdrop-blur-sm transition-all duration-500 ease-out ${
+          showHint ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
+        }`}
+        aria-hidden={!showHint}
+      >
+        <span className="mr-2 inline-block h-1.5 w-1.5 animate-ping rounded-full bg-dream align-middle" />
+        Hover over the red dot on the globe
+      </p>
       <p
         className={`meta pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 transition-opacity duration-700 ease-out ${
           entered ? "opacity-100 delay-500" : "opacity-0"

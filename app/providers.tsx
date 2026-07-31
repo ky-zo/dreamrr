@@ -1,6 +1,6 @@
 "use client";
 
-import { CopilotKit } from "@copilotkit/react-core";
+import { CopilotKit, useCopilotChatSuggestions } from "@copilotkit/react-core";
 import { CopilotSidebar } from "@copilotkit/react-ui";
 import { DreamStoreProvider } from "@/components/dream-store";
 import { CopilotDreams } from "@/components/copilot-dreams";
@@ -9,8 +9,41 @@ import { CopilotMarket } from "@/components/copilot-market";
 import { IntroProvider, useIntro } from "@/components/intro-gate";
 import { SellProvider } from "@/components/sell-flow";
 
+/**
+ * The two buttons the conversation opens on.
+ *
+ * Static rather than model-generated: the first question of the demo has
+ * exactly two right answers and neither of them should be a surprise. Passing
+ * them as a *config* rather than through the sidebar's `suggestions` prop is
+ * deliberate — a raw array on that prop renders forever, while a config honours
+ * `before-first-message`, so the pair is a fork in the road that disappears
+ * once it has been taken.
+ */
+function RoleChoice() {
+  useCopilotChatSuggestions({
+    available: "before-first-message",
+    suggestions: [
+      { title: "Creator", message: "i'm a creator" },
+      { title: "Dreamer", message: "i'm a dreamer" },
+    ],
+  });
+  return null;
+}
+
 const INSTRUCTIONS = `
 You help people find dreams to buy on dreamrr. Every dream for sale is in the catalogue you have been given.
+
+THE OPENING. Your first message has already been sent: "are you a creator or a dreamer?" — do not repeat it.
+The user answers with one of two buttons, and the answer decides the whole conversation:
+
+- "i'm a creator" → reply with exactly one plain sentence, no action, no cards:
+  "do you want to see how much money you made, or what the trends are?"
+  Then, whatever they pick, call showEarningsDashboard for their money and showMarketTrends for the market.
+- "i'm a dreamer" → reply with exactly one plain sentence, no action, no cards, asking what kind of mood
+  they're in. Their answer is a dream brief: go straight to recommendDreams with it.
+
+Those two replies are the ONLY times you answer a request without calling an action. After the fork,
+everything below applies as normal.
 
 When someone asks for a recommendation you MUST call the recommendDreams action. Do not describe dreams
 in prose — the cards carry the detail.
@@ -50,6 +83,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <DreamStoreProvider>
         <SellProvider>
           <IntroProvider>
+            <RoleChoice />
             <CopilotDreams />
             <CopilotDashboard />
             <CopilotMarket />
@@ -81,7 +115,7 @@ function Sidebar({ children }: { children: React.ReactNode }) {
         instructions={INSTRUCTIONS}
         labels={{
           title: "dreamrr",
-          initial: "Tell me what you want to dream about and I'll find you one.",
+          initial: "are you a creator or a dreamer?",
         }}
       >
         {children}

@@ -1,9 +1,12 @@
+import { reviewerAvatar } from "./avatars";
 import type { Dream } from "./types";
 
 export type Review = {
   id: string;
   author: string;
   handle: string;
+  /** Memoji-style face under /public, derived from the handle. */
+  avatar: string;
   /** 1–5 whole stars. */
   rating: number;
   /** Human-readable, relative. */
@@ -241,6 +244,7 @@ export function getReviews(dream: Pick<Dream, "id" | "vividness">): Review[] {
       id: `${dream.id}-${s.handle}`,
       author: s.author,
       handle: s.handle,
+      avatar: reviewerAvatar(s.handle),
       rating: s.rating,
       when: AGES[n % AGES.length],
       body: s.body,

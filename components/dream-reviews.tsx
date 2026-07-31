@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Avatar } from "@/components/media";
 import { averageRating, getReviews, ratingHistogram } from "@/lib/reviews";
 import type { DreamWithSeller } from "@/lib/types";
 
@@ -58,19 +59,29 @@ export function DreamReviews({ dream }: { dream: DreamWithSeller }) {
 
           <ul className="space-y-4">
             {reviews.map((r) => (
-              <li key={r.id} className="border-t border-line pt-4 first:border-t-0 first:pt-0">
-                <div className="flex items-baseline justify-between gap-2">
-                  <p className="truncate text-sm font-medium">{r.author}</p>
-                  <p className="meta shrink-0">{r.when}</p>
+              <li
+                key={r.id}
+                className="flex gap-3 border-t border-line pt-4 first:border-t-0 first:pt-0"
+              >
+                <Avatar
+                  src={r.avatar}
+                  alt={r.author}
+                  className="mt-0.5 h-8 w-8 shrink-0 rounded-full bg-paper-sunk object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="truncate text-sm font-medium">{r.author}</p>
+                    <p className="meta shrink-0">{r.when}</p>
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <Stars value={r.rating} />
+                    <span className="meta">{r.handle}</span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-ink-soft">{r.body}</p>
+                  {r.helpful > 0 && (
+                    <p className="meta mt-2">{r.helpful} found this helpful</p>
+                  )}
                 </div>
-                <div className="mt-1 flex items-center gap-2">
-                  <Stars value={r.rating} />
-                  <span className="meta">{r.handle}</span>
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-ink-soft">{r.body}</p>
-                {r.helpful > 0 && (
-                  <p className="meta mt-2">{r.helpful} found this helpful</p>
-                )}
               </li>
             ))}
           </ul>

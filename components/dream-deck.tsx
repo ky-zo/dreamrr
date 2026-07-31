@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { DreamMedia, PlayBadge } from "@/components/media";
 import { useDreamStore } from "@/components/dream-store";
 import { formatPrice } from "@/lib/dreams";
@@ -18,7 +18,7 @@ import type { DreamWithSeller } from "@/lib/types";
  * which is the trick worth showing.
  */
 export function DreamDeck({ dreams }: { dreams: DreamWithSeller[] }) {
-  const { highlight, highlightedId } = useDreamStore();
+  const { highlight, highlightedId, select } = useDreamStore();
   const [index, setIndex] = useState(0);
   const [drag, setDrag] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -30,11 +30,15 @@ export function DreamDeck({ dreams }: { dreams: DreamWithSeller[] }) {
   const count = dreams.length;
   const current = dreams[Math.min(index, count - 1)];
 
-  // The front card owns the globe. Also runs on mount, so a recommendation
-  // lights up its dot the moment it appears — no click needed.
+  // The front card owns the globe *and* the detail panel. Also runs on mount,
+  // so a recommendation lights up its dot and opens on the left the moment it
+  // appears — a dream the assistant picked is treated exactly like one you
+  // clicked yourself, and swiping the deck moves both.
   useEffect(() => {
-    if (current) highlight(current.id);
-  }, [current, highlight]);
+    if (!current) return;
+    highlight(current.id);
+    select(current.id);
+  }, [current, highlight, select]);
 
   // Let go of the globe when the deck scrolls out of the conversation.
   useEffect(
@@ -152,6 +156,35 @@ export function DreamDeck({ dreams }: { dreams: DreamWithSeller[] }) {
   );
 }
 
+/**
+ * A card that plays on hover looks like a still until you happen to touch it,
+ * so the first one with footage says so. It's spent the moment anyone hovers a
+ * card — this is a nudge, not a label — and it's session-scoped, like
+ * everything else in this app.
+ */
+let hintSpent = false;
+const hintWatchers = new Set<() => void>();
+
+function useHoverHint(): [boolean, () => void] {
+  const showing = useSyncExternalStore(
+    (notify) => {
+      hintWatchers.add(notify);
+      return () => hintWatchers.delete(notify);
+    },
+    () => !hintSpent,
+    // Never on the server: it can only be wrong by the time it hydrates.
+    () => false,
+  );
+
+  const spend = useCallback(() => {
+    if (hintSpent) return;
+    hintSpent = true;
+    for (const notify of hintWatchers) notify();
+  }, []);
+
+  return [showing, spend];
+}
+
 function Arrow({ dir, onClick }: { dir: "left" | "right"; onClick: () => void }) {
   return (
     <button
@@ -178,6 +211,9 @@ function DreamCard({
 }) {
   const { select } = useDreamStore();
   const [hovered, setHovered] = useState(false);
+  const [hintShowing, spendHint] = useHoverHint();
+  // Front card only, and only where there's something to play.
+  const hint = hintShowing && !inert && !!dream.video;
 
   return (
     <button
@@ -185,7 +221,10 @@ function DreamCard({
       onClick={() => !inert && select(dream.id)}
       tabIndex={inert ? -1 : 0}
       aria-hidden={inert}
-      onPointerEnter={() => setHovered(true)}
+      onPointerEnter={() => {
+        spendHint();
+        setHovered(true);
+      }}
       onPointerLeave={() => setHovered(false)}
       aria-label={`Open ${dream.title}, recorded in ${dream.location}, ${formatPrice(dream.price)}`}
       className={`block w-full select-none rounded-md border bg-paper-raised p-2 text-left transition-[border-color,opacity] ${
@@ -200,6 +239,18 @@ function DreamCard({
           active={hovered && !inert}
           className="pointer-events-none aspect-[16/9] w-full overflow-hidden rounded-sm"
         />
+        {/* Pointer devices only — there is no hover to ask for on a touchscreen. */}
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 hidden items-center justify-center transition-opacity duration-300 [@media(hover:hover)]:flex ${
+            hint ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <span className="meta rounded-full bg-paper-raised/90 px-2.5 py-1 backdrop-blur-sm">
+            hover to play
+          </span>
+        </span>
+
         <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1.5">
           {dream.video ? <PlayBadge /> : null}
           <span className="meta rounded-sm bg-paper-raised/85 px-1.5 py-0.5">
